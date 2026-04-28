@@ -39,10 +39,6 @@ cd energy-gui
 mvn clean javafx:run
 ```
 
-```md
-Do not start the JavaFX GUI with the VS Code Run button. Use Maven instead.
-```
-
 ## API Endpoints
 
 The GUI calls these endpoints on the API:

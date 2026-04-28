@@ -14,24 +14,29 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
-/*
-Do not start the JavaFX GUI with the VS Code Run button. Use Maven instead.
-*/
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main extends Application {
 
     private static final String API_BASE_URL = "http://localhost:8080";
 
-    private Label currentDataLabel;
+    private TextArea currentDataArea;
     private TextArea historicalDataArea;
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Override
     public void start(Stage stage) {
         Label titleLabel = new Label("Energy Community GUI");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-        currentDataLabel = new Label("Current data not loaded yet.");
+        currentDataArea = new TextArea("Current data not loaded yet.");
+        currentDataArea.setEditable(false);
+        currentDataArea.setWrapText(true);
+        currentDataArea.setPrefHeight(90);
+
         Button refreshButton = new Button("Refresh Current Data");
 
         TextField startField = new TextField("2025-01-10T13:00:00");
@@ -41,6 +46,7 @@ public class Main extends Application {
 
         historicalDataArea = new TextArea();
         historicalDataArea.setEditable(false);
+        historicalDataArea.setWrapText(true);
         historicalDataArea.setPrefHeight(180);
 
         refreshButton.setOnAction(e -> loadCurrentData());
@@ -51,7 +57,7 @@ public class Main extends Application {
         root.getChildren().addAll(
                 titleLabel,
                 refreshButton,
-                currentDataLabel,
+                currentDataArea,
                 new Label("Start:"),
                 startField,
                 new Label("End:"),
@@ -69,12 +75,12 @@ public class Main extends Application {
     private void loadCurrentData() {
         try {
             String response = sendGetRequest(API_BASE_URL + "/energy/current");
-            currentDataLabel.setText(response);
+            currentDataArea.setText(formatCurrentData(response));
         } catch (IOException e) {
-            currentDataLabel.setText("Error loading current data: " + getReadableErrorMessage(e));
+            currentDataArea.setText("Error loading current data:\n" + getReadableErrorMessage(e));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            currentDataLabel.setText("Error loading current data: " + getReadableErrorMessage(e));
+            currentDataArea.setText("Error loading current data:\n" + getReadableErrorMessage(e));
         }
     }
 
@@ -82,13 +88,97 @@ public class Main extends Application {
         try {
             String url = API_BASE_URL + "/energy/historical?start=" + start + "&end=" + end;
             String response = sendGetRequest(url);
-            historicalDataArea.setText(response);
+            historicalDataArea.setText(formatHistoricalData(response));
         } catch (IOException e) {
-            historicalDataArea.setText("Error loading historical data: " + getReadableErrorMessage(e));
+            historicalDataArea.setText("Error loading historical data:\n" + getReadableErrorMessage(e));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            historicalDataArea.setText("Error loading historical data: " + getReadableErrorMessage(e));
+            historicalDataArea.setText("Error loading historical data:\n" + getReadableErrorMessage(e));
         }
+    }
+
+    private String formatCurrentData(String jsonResponse) {
+        return String.join("\n",
+                "Hour: " + extractJsonValue(jsonResponse, "hour"),
+                "Community Pool: " + extractJsonValue(jsonResponse, "communityDepleted") + "% used",
+                "Grid Portion: " + extractJsonValue(jsonResponse, "gridPortion") + "%"
+        );
+    }
+
+    private String formatHistoricalData(String jsonResponse) {
+        String trimmedResponse = jsonResponse == null ? "" : jsonResponse.trim();
+
+        if (trimmedResponse.startsWith("[")) {
+            List<String> entries = splitJsonObjects(trimmedResponse);
+            if (entries.isEmpty()) {
+                return formatHistoricalEntry(trimmedResponse);
+            }
+
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < entries.size(); i++) {
+                if (i > 0) {
+                    result.append("\n\n");
+                }
+                result.append(formatHistoricalEntry(entries.get(i)));
+            }
+            return result.toString();
+        }
+
+        return formatHistoricalEntry(trimmedResponse);
+    }
+
+    private String formatHistoricalEntry(String jsonResponse) {
+        return String.join("\n",
+                "Hour: " + extractJsonValue(jsonResponse, "hour"),
+                "Community produced: " + extractJsonValue(jsonResponse, "communityProduced") + " kWh",
+                "Community used: " + extractJsonValue(jsonResponse, "communityUsed") + " kWh",
+                "Grid used: " + extractJsonValue(jsonResponse, "gridUsed") + " kWh"
+        );
+    }
+
+    private List<String> splitJsonObjects(String jsonResponse) {
+        List<String> entries = new ArrayList<>();
+        int depth = 0;
+        int objectStart = -1;
+
+        for (int i = 0; i < jsonResponse.length(); i++) {
+            char character = jsonResponse.charAt(i);
+
+            if (character == '{') {
+                if (depth == 0) {
+                    objectStart = i;
+                }
+                depth++;
+            } else if (character == '}') {
+                depth--;
+                if (depth == 0 && objectStart >= 0) {
+                    entries.add(jsonResponse.substring(objectStart, i + 1));
+                    objectStart = -1;
+                }
+            }
+        }
+
+        return entries;
+    }
+
+    private String extractJsonValue(String jsonResponse, String key) {
+        if (jsonResponse == null || jsonResponse.isBlank()) {
+            return "n/a";
+        }
+
+        Pattern pattern = Pattern.compile("\"" + Pattern.quote(key) + "\"\\s*:\\s*(\"([^\"]*)\"|[-0-9.]+)");
+        Matcher matcher = pattern.matcher(jsonResponse);
+
+        if (!matcher.find()) {
+            return "n/a";
+        }
+
+        String quotedValue = matcher.group(2);
+        if (quotedValue != null) {
+            return quotedValue;
+        }
+
+        return matcher.group(1);
     }
 
     private String sendGetRequest(String urlString) throws IOException, InterruptedException {
