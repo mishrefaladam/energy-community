@@ -1,94 +1,56 @@
-# Energy Community
+# Energy Community - Intermediate Hand-In
 
-Distributed Systems – Semester Project (BWI-BB-4, SS2026).
+## Project Description
 
-A small distributed system that simulates an energy community. Two senders
-push production and usage messages into RabbitMQ, two services consume
-those messages and update a PostgreSQL database, a Spring Boot REST API
-exposes the data and a JavaFX desktop GUI shows it.
+This project is an intermediate hand-in for the Distributed Systems course.
+It demonstrates a simple Energy Community system with a Spring Boot REST API and a JavaFX GUI.
 
 ## Components
 
-| Folder                   | Description |
-| ------------------------ | ----------- |
-| `docker/`                | docker-compose.yml for PostgreSQL and RabbitMQ |
-| `energy-api/`            | Spring Boot REST API. Reads from the database. |
-| `energy-gui/`            | JavaFX desktop application that calls the REST API. |
-| `energy-producer/`       | Sends production messages to RabbitMQ. Uses the open-meteo Weather API. |
-| `energy-user/`           | Sends usage messages to RabbitMQ. Uses the time of day. |
-| `usage-service/`         | Consumes production and usage messages and updates the `energy_usage` table. |
-| `percentage-service/`    | Listens for usage updates and recalculates the `current_percentage` table. |
+The repository contains two independently startable applications:
 
-## Start order
+1. energy-api
+	- Spring Boot REST API
+	- Provides structured example data
+	- No database for the intermediate hand-in
+	- No RabbitMQ for the intermediate hand-in
 
-1. Start Docker services:
-   `cd docker && docker compose up -d`
-2. Start REST API:
-   `cd energy-api && ./mvnw spring-boot:run`
-3. Start Usage Service:
-   `cd usage-service && ./mvnw spring-boot:run`
-4. Start Percentage Service:
-   `cd percentage-service && ./mvnw spring-boot:run`
-5. Start Energy Producer:
-   `cd energy-producer && ./mvnw spring-boot:run`
-6. Start Energy User:
-   `cd energy-user && ./mvnw spring-boot:run`
-7. Start JavaFX GUI:
-   `cd energy-gui && mvn clean javafx:run`
+2. energy-gui
+	- JavaFX GUI
+	- Calls the REST API using HTTP
+	- Displays current and historical energy data
 
-A detailed step by step guide for IntelliJ and Docker is in [ANLEITUNG.md](ANLEITUNG.md).
+## Start Order
 
-## Endpoints
+Start the REST API first.
+Then start the JavaFX GUI.
 
-The REST API listens on `http://localhost:8080`:
+## Start REST API
 
-* `GET /energy/current` – current percentage data
-* `GET /energy/historical?start=2025-01-10T00:00:00&end=2025-01-10T23:00:00` – usage history
-
-## Architecture
-
+```bash
+cd energy-api
+mvn clean spring-boot:run
 ```
-+------------------+        +-------------------+
-| energy-producer  |--->    |                   |
-+------------------+    \   |                   |
-                         \  | RabbitMQ          |
-+------------------+    /   | (energy_messages) |
-| energy-user      |---/    |                   |
-+------------------+        +---------+---------+
-                                      |
-                                      v
-                            +---------------------+
-                            | usage-service       |
-                            | (reads messages,    |
-                            | writes energy_usage)|
-                            +----------+----------+
-                                       |
-                                       v
-                          +--------------------------+
-                          | RabbitMQ (usage_updates) |
-                          +-------------+------------+
-                                        |
-                                        v
-                           +------------------------+
-                           | percentage-service     |
-                           | (writes percentage)    |
-                           +------------+-----------+
-                                        |
-                                        v
-                              +-------------------+
-                              | PostgreSQL        |
-                              | - energy_usage    |
-                              | - current_percentage
-                              +---------+---------+
-                                        ^
-                                        |
-                              +-------------------+
-                              | energy-api        |
-                              | (REST endpoints)  |
-                              +---------+---------+
-                                        ^
-                                        |
-                              +-------------------+
-                              | energy-gui        |
-                              +-------------------+
+
+## Start JavaFX GUI
+
+```bash
+cd energy-gui
+mvn clean javafx:run
 ```
+
+## API Endpoints
+
+The GUI calls these endpoints on the API:
+
+- `GET http://localhost:8080/energy/current`
+- `GET http://localhost:8080/energy/historical?start=2025-01-10T13:00:00&end=2025-01-10T14:00:00`
+
+## Project Structure
+
+The repository keeps the applications separate:
+
+- `energy-api/` contains the Spring Boot backend
+- `energy-gui/` contains the JavaFX frontend
+- `README.md` documents the full project
+- `.gitignore` excludes generated and IDE files

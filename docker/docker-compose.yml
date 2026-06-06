@@ -1,22 +1,14 @@
 services:
   database:
     image: postgres:alpine
-    container_name: energy-postgres
     ports:
       - '5432:5432'
     environment:
       - POSTGRES_USER=disysuser
       - POSTGRES_PASSWORD=disyspw
-      - POSTGRES_DB=energydb
-    volumes:
-      - energy-postgres-data:/var/lib/postgresql/data
-
+  
   rabbitmq:
     image: rabbitmq:management-alpine
-    container_name: energy-rabbitmq
     ports:
       - '5672:5672'
       - '15672:15672'
-
-volumes:
-  energy-postgres-data:
