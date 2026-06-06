@@ -1,56 +1,72 @@
-# Energy Community - Intermediate Hand-In
+# Energy Community
 
-## Project Description
+Distributed Systems semester project.
 
-This project is an intermediate hand-in for the Distributed Systems course.
-It demonstrates a simple Energy Community system with a Spring Boot REST API and a JavaFX GUI.
+The project simulates an energy community with RabbitMQ, PostgreSQL,
+Spring Boot services, a REST API and a JavaFX GUI.
 
 ## Components
 
-The repository contains two independently startable applications:
-
-1. energy-api
-	- Spring Boot REST API
-	- Provides structured example data
-	- No database for the intermediate hand-in
-	- No RabbitMQ for the intermediate hand-in
-
-2. energy-gui
-	- JavaFX GUI
-	- Calls the REST API using HTTP
-	- Displays current and historical energy data
+- `docker/` starts PostgreSQL and RabbitMQ
+- `energy-api/` exposes REST endpoints and reads from PostgreSQL
+- `usage-service/` consumes energy messages and updates usage data
+- `percentage-service/` calculates current percentage data
+- `energy-producer/` sends producer messages to RabbitMQ
+- `energy-user/` sends user messages to RabbitMQ
+- `energy-gui/` shows current and historical data from the REST API
 
 ## Start Order
 
-Start the REST API first.
-Then start the JavaFX GUI.
+1. Start Docker services
 
-## Start REST API
+```bash
+cd docker
+docker compose up -d
+```
+
+2. Start REST API
 
 ```bash
 cd energy-api
-mvn clean spring-boot:run
+./mvnw spring-boot:run
 ```
 
-## Start JavaFX GUI
+3. Start Usage Service
+
+```bash
+cd usage-service
+./mvnw spring-boot:run
+```
+
+4. Start Percentage Service
+
+```bash
+cd percentage-service
+./mvnw spring-boot:run
+```
+
+5. Start Energy Producer
+
+```bash
+cd energy-producer
+./mvnw spring-boot:run
+```
+
+6. Start Energy User
+
+```bash
+cd energy-user
+./mvnw spring-boot:run
+```
+
+7. Start JavaFX GUI
 
 ```bash
 cd energy-gui
 mvn clean javafx:run
 ```
 
-## API Endpoints
-
-The GUI calls these endpoints on the API:
+## REST Endpoints
 
 - `GET http://localhost:8080/energy/current`
 - `GET http://localhost:8080/energy/historical?start=2025-01-10T13:00:00&end=2025-01-10T14:00:00`
-
-## Project Structure
-
-The repository keeps the applications separate:
-
-- `energy-api/` contains the Spring Boot backend
-- `energy-gui/` contains the JavaFX frontend
-- `README.md` documents the full project
-- `.gitignore` excludes generated and IDE files
