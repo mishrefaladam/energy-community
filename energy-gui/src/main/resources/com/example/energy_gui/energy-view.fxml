@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="10.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.energy_gui.EnergyController">
+    <padding>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+    </padding>
+    <children>
+        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Current hour" />
+        <HBox spacing="10.0">
+            <children>
+                <Label text="Community Pool" />
+                <Label fx:id="lb_communityPool" text="-" />
+            </children>
+        </HBox>
+        <HBox spacing="10.0">
+            <children>
+                <Label text="Grid Portion" />
+                <Label fx:id="lb_gridPortion" text="-" />
+            </children>
+        </HBox>
+        <Button fx:id="btn_refresh" mnemonicParsing="false" onAction="#onRefreshClicked" text="refresh" />
+
+        <Separator />
+
+        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Historical data" />
+        <HBox spacing="10.0">
+            <children>
+                <Label text="Start" />
+                <DatePicker fx:id="dp_start" />
+                <Spinner fx:id="sp_startHour" prefWidth="70.0" />
+                <Label text=":00" />
+            </children>
+        </HBox>
+        <HBox spacing="10.0">
+            <children>
+                <Label text="End" />
+                <DatePicker fx:id="dp_end" />
+                <Spinner fx:id="sp_endHour" prefWidth="70.0" />
+                <Label text=":00" />
+            </children>
+        </HBox>
+        <Button fx:id="btn_showData" mnemonicParsing="false" onAction="#onShowDataClicked" text="show data" />
+
+        <HBox spacing="10.0">
+            <children>
+                <Label text="Community produced" />
+                <Label fx:id="lb_communityProduced" text="-" />
+            </children>
+        </HBox>
+        <HBox spacing="10.0">
+            <children>
+                <Label text="Community used" />
+                <Label fx:id="lb_communityUsed" text="-" />
+            </children>
+        </HBox>
+        <HBox spacing="10.0">
+            <children>
+                <Label text="Grid used" />
+                <Label fx:id="lb_gridUsed" text="-" />
+            </children>
+        </HBox>
+
+        <TableView fx:id="tbl_history" prefHeight="200.0">
+            <columns>
+                <TableColumn fx:id="col_hour" prefWidth="160.0" text="Hour" />
+                <TableColumn fx:id="col_produced" prefWidth="120.0" text="Produced (kWh)" />
+                <TableColumn fx:id="col_used" prefWidth="120.0" text="Used (kWh)" />
+                <TableColumn fx:id="col_gridUsed" prefWidth="120.0" text="Grid (kWh)" />
+            </columns>
+        </TableView>
+
+        <Label fx:id="lb_status" text="" />
+    </children>
+</VBox>
