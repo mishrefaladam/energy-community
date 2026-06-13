@@ -1,5 +1,7 @@
 package com.example.energy_producer.weather;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -7,8 +9,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Calls the open-meteo weather API and returns the current cloud cover
@@ -20,6 +20,7 @@ public class WeatherService {
     private final double latitude;
     private final double longitude;
     private final HttpClient httpClient = HttpClient.newBuilder().build();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public WeatherService(
             @Value("${producer.weather.latitude}") double latitude,
@@ -46,11 +47,12 @@ public class WeatherService {
             HttpResponse<String> response = httpClient.send(getRequest,
                     HttpResponse.BodyHandlers.ofString());
 
-            // simple extraction so we do not need an extra json library
-            Pattern pattern = Pattern.compile("\"cloud_cover\"\\s*:\\s*([0-9]+(?:\\.[0-9]+)?)");
-            Matcher matcher = pattern.matcher(response.body());
-            if (matcher.find()) {
-                double cloudCover = Double.parseDouble(matcher.group(1));
+
+            JsonNode root = mapper.readTree(response.body());
+            JsonNode cloudCoverNode = root.path("current").path("cloud_cover");
+
+            if (cloudCoverNode.isNumber()) {
+                double cloudCover = cloudCoverNode.asDouble();
                 double clamped = Math.max(0.0, Math.min(100.0, cloudCover));
                 return 1.0 - (clamped / 100.0);
             }
