@@ -67,13 +67,13 @@ public class UsageSender {
      * evening (around 19), lower values during the night.
      */
     private double peakFactorForHour(int hourOfDay) {
-        double morning = Math.exp(-Math.pow(hourOfDay - 8, 2) / 4.0);
-        double evening = Math.exp(-Math.pow(hourOfDay - 19, 2) / 4.0);
-        return Math.min(1.0, morning + evening);
+        if (hourOfDay >= 7 && hourOfDay <= 9)   return 1.0;  // Morgen-Peak
+        if (hourOfDay >= 18 && hourOfDay <= 20) return 1.0;  // Abend-Peak
+        if (hourOfDay >= 0 && hourOfDay <= 5)   return 0.1;  // Nacht
+        return 0.5;                                          // Rest des Tages
     }
 
     private double round(double value) {
         return Math.round(value * 1000.0) / 1000.0;
     }
-
 }
