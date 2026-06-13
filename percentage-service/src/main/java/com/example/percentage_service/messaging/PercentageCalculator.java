@@ -21,6 +21,8 @@ public class PercentageCalculator {
         this.currentPercentageRepository = currentPercentageRepository;
     }
 
+    //Der Percentage Service reagiert auf usage_updates und berechnet neue Prozentwerte.
+    //Die Message enthält hier nur die Stunde, nicht die kompletten Energiewerte.
     @RabbitListener(queues = "usage_updates")
     public void readFromUsageUpdates(String message) {
         System.out.println("Received message from queue");
@@ -28,12 +30,13 @@ public class PercentageCalculator {
 
         LocalDateTime hour = LocalDateTime.parse(message);
 
+        //Der percentage-service liest zuerst die Energiedaten für die betroffene Stunde aus der Tabelle energy_usage.
         UsageEntity usage = usageRepository.findById(hour).orElse(null);
         if (usage == null) {
             // no usage data for this hour yet
             return;
         }
-
+        //communityDepleted bedeutet: Wie viel Prozent der produzierten Community-Energie wurden verbraucht?
         double communityDepleted = 0.0;
         if (usage.getCommunityProduced() > 0) {
             communityDepleted = usage.getCommunityUsed() / usage.getCommunityProduced() * 100.0;
@@ -42,12 +45,14 @@ public class PercentageCalculator {
         }
 
         double totalUsed = usage.getCommunityUsed() + usage.getGridUsed();
+        //gridPortion bedeutet: Welcher Anteil des Gesamtverbrauchs kam aus dem öffentlichen Netz?
         double gridPortion = 0.0;
         if (totalUsed > 0) {
             gridPortion = usage.getGridUsed() / totalUsed * 100.0;
         }
 
-        // the percentage table only holds the information of the current hour
+        //current_percentage hält nur den aktuellen Wert.
+        //Deshalb wird die Tabelle zuerst geleert und danach mit dem neuen Wert befüllt.
         currentPercentageRepository.deleteAll();
 
         CurrentPercentageEntity entity = new CurrentPercentageEntity();

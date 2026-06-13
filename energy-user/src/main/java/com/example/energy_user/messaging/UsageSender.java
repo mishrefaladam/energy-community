@@ -23,6 +23,7 @@ public class UsageSender {
 
     @PostConstruct
     public void start() {
+        //Nach dem Start erzeugt der Service fortlaufend simulierte Verbrauchsnachrichten.
         Thread sender = new Thread(this::loop);
         sender.setName("usage-sender");
         sender.start();
@@ -48,11 +49,12 @@ public class UsageSender {
     private void send() throws Exception {
         LocalDateTime now = LocalDateTime.now();
         double peakFactor = peakFactorForHour(now.getHour());
-        // peakFactor is between 0.0 (deep night) and 1.0 (peak hour)
+        //peakFactor ist zwischen 0.0 (Nacht) und 1.0 (Spitzenzeit).
         double base = 0.001 + random.nextDouble() * 0.003;
         double kwh = round(base + peakFactor * 0.008);
 
         String datetime = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        //type=USER ist wichtig, damit der Usage Service community_used und ggf. grid_used erhöht.
         EnergyMessageDto message = new EnergyMessageDto("USER", "COMMUNITY", kwh, datetime);
 
         String json = mapper.writeValueAsString(message);

@@ -2,14 +2,17 @@ package com.example.energy_gui.dto;
 
 import java.time.LocalDateTime;
 
+//Dieses DTO entspricht der JSON-Antwort von /energy/current.
 public class CurrentEnergyDto {
     private LocalDateTime hour;
     private double communityDepleted;
     private double gridPortion;
 
+    //Der leere Konstruktor ist wichtig, damit Jackson das Objekt aus JSON erstellen kann.
     public CurrentEnergyDto() {
     }
 
+    //Getter und Setter sind wichtig, damit Jackson die JSON-Felder korrekt setzen und die GUI die Werte lesen kann.
     public LocalDateTime getHour() {
         return hour;
     }

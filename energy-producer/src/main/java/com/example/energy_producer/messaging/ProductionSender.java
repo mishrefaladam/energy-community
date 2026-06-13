@@ -26,6 +26,7 @@ public class ProductionSender {
 
     @PostConstruct
     public void start() {
+        //Nach dem Spring-Start beginnt ein eigener Thread, der regelmäßig Produktionsnachrichten erzeugt.
         Thread sender = new Thread(this::loop);
         sender.setName("production-sender");
         sender.start();
@@ -51,16 +52,18 @@ public class ProductionSender {
 
     private void send() throws Exception {
         double sunFactor = weather.getSunFactor();
-        // a plausible per-minute production value, scaled by how much sun there is
+        //Die simulierte Produktion hängt vom Wetter ab: mehr Sonne bedeutet mehr kWh.
         double base = 0.001 + random.nextDouble() * 0.005;
         double kwh = round(base + sunFactor * 0.01);
 
         String datetime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        //type=PRODUCER ist wichtig, damit der Usage Service community_produced erhöht.
         EnergyMessageDto message = new EnergyMessageDto("PRODUCER", "COMMUNITY", kwh, datetime);
 
         String json = mapper.writeValueAsString(message);
         System.out.println("Sending production message");
         System.out.println(json);
+        //RabbitTemplate sendet die JSON-Nachricht an RabbitMQ.
         this.rabbit.convertAndSend("energy_messages", json);
     }
 

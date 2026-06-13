@@ -1,7 +1,7 @@
 package com.example.energy_gui.dto;
 
 import java.time.LocalDateTime;
-
+//Dieses DTO entspricht der JSON-Antwort von /energy/historical.
 public class HistoricalEnergyDto {
     private LocalDateTime hour;
     private double communityProduced;

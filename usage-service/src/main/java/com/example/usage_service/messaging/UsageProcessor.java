@@ -16,13 +16,15 @@ public class UsageProcessor {
 
     private final RabbitTemplate rabbit;
     private final UsageRepository usageRepository;
+    //ObjectMapper wandelt die JSON-Nachricht aus RabbitMQ in ein EnergyMessageDto um.
     private final ObjectMapper mapper = new ObjectMapper();
 
     public UsageProcessor(RabbitTemplate rabbit, UsageRepository usageRepository) {
         this.rabbit = rabbit;
         this.usageRepository = usageRepository;
     }
-
+    //Der Usage Service hört auf energy_messages, verarbeitet Nachrichten, speichert Daten und sendet danach ein Update.
+    //Das ist Choreography, weil der Service auf Events reagiert und danach selbst ein neues Event auslöst.
     @RabbitListener(queues = "energy_messages")
     public void readFromEnergyMessages(String message) throws Exception {
         System.out.println("Received message from queue");
@@ -30,10 +32,13 @@ public class UsageProcessor {
 
         EnergyMessageDto dto = mapper.readValue(message, EnergyMessageDto.class);
 
+        //Alle Nachrichten werden auf die volle Stunde gekürzt.
+        //Dadurch landen mehrere Events derselben Stunde im gleichen Datensatz.
         LocalDateTime hour = LocalDateTime
                 .parse(dto.getDatetime())
                 .truncatedTo(ChronoUnit.HOURS);
-
+        //Der Service sucht zuerst, ob es für diese Stunde schon einen Datensatz gibt.
+        //Wenn nicht, wird eine neue UsageEntity erstellt.
         UsageEntity entity = usageRepository
                 .findById(hour)
                 .orElseGet(() -> {
@@ -41,10 +46,15 @@ public class UsageProcessor {
                     created.setHour(hour);
                     return created;
                 });
-
+        // Hier wird entschieden, wie die empfangene Nachricht verarbeitet wird.
+        // Eine PRODUCER-Nachricht erhöht die produzierte Community-Energie.
+        // Eine USER-Nachricht erhöht den Verbrauch:
+        // Zuerst wird verfügbare Community-Energie verwendet.
+        // Reicht diese nicht aus, wird der restliche Bedarf aus dem Grid gedeckt.
         if ("PRODUCER".equals(dto.getType())) {
             entity.setCommunityProduced(entity.getCommunityProduced() + dto.getKwh());
         } else if ("USER".equals(dto.getType())) {
+            //available zeigt, wie viel Community-Energie in dieser Stunde noch übrig ist.
             double available = entity.getCommunityProduced() - entity.getCommunityUsed();
             if (dto.getKwh() <= available) {
                 // the community pool can cover the demand
@@ -57,10 +67,11 @@ public class UsageProcessor {
                 entity.setGridUsed(entity.getGridUsed() + fromGrid);
             }
         }
-
+        //Hier wird der Datensatz in PostgreSQL gespeichert.
         usageRepository.save(entity);
 
-        // tell the percentage service that new usage data is available
+        //Nach dem Speichern wird nur die betroffene Stunde verschickt.
+        //Der Percentage Service lädt sich die vollständigen Werte selbst aus der Datenbank.
         this.rabbit.convertAndSend("usage_updates", hour.toString());
     }
 

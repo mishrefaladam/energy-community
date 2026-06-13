@@ -11,10 +11,13 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<!-- Hier wird die Oberfläche erstellt, die der Benutzer beim Start der Anwendung sieht. -->
+<!-- fx:controller verbindet die FXML-Oberfläche mit der Java-Klasse EnergyController. -->
 <VBox spacing="10.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.energy_gui.EnergyController">
     <padding>
         <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
     </padding>
+    <!-- fx:id verbindet FXML-Elemente mit Feldern im Controller; onAction verbindet Buttons mit Methoden. -->
     <children>
         <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Current hour" />
         <HBox spacing="10.0">
@@ -29,12 +32,14 @@
                 <Label fx:id="lb_gridPortion" text="-" />
             </children>
         </HBox>
+        <!-- Wenn der Benutzer auf refresh klickt, wird onRefreshClicked() ausgeführt. -->
         <Button fx:id="btn_refresh" mnemonicParsing="false" onAction="#onRefreshClicked" text="refresh" />
 
         <Separator />
 
         <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Historical data" />
         <HBox spacing="10.0">
+            <!-- Hier kann der Benutzer das Startdatum und die Startstunde auswählen. -->
             <children>
                 <Label text="Start" />
                 <DatePicker fx:id="dp_start" />
@@ -50,6 +55,7 @@
                 <Label text=":00" />
             </children>
         </HBox>
+        <!-- Wenn der Benutzer auf show data klickt, wird onShowDataClicked() ausgeführt. -->
         <Button fx:id="btn_showData" mnemonicParsing="false" onAction="#onShowDataClicked" text="show data" />
 
         <HBox spacing="10.0">
@@ -70,7 +76,7 @@
                 <Label fx:id="lb_gridUsed" text="-" />
             </children>
         </HBox>
-
+        <!-- Die Tabelle zeigt historische Energiedaten an. -->
         <TableView fx:id="tbl_history" prefHeight="200.0">
             <columns>
                 <TableColumn fx:id="col_hour" prefWidth="160.0" text="Hour" />

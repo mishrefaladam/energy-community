@@ -6,6 +6,8 @@ import jakarta.persistence.Id;
 
 import java.time.LocalDateTime;
 
+//Diese Entity entspricht der Tabelle current_percentage.
+//Diese Entity bildet die Tabelle current_percentage in Java ab.
 @Entity(name = "current_percentage")
 public class CurrentPercentageEntity {
 

@@ -1,11 +1,15 @@
 package com.example.usage_service.dto;
 
 public class EnergyMessageDto {
+    //Dieses DTO entspricht dem JSON-Format in der Queue energy_messages.
+    //Producer und User senden dasselbe Format, unterscheiden sich aber über type.
     private String type;          // PRODUCER or USER
     private String association;   // COMMUNITY
     private double kwh;
     private String datetime;      // e.g. 2025-01-10T14:33:00
 
+    //Der leere Konstruktor ist wichtig für Jackson/ObjectMapper.
+    //Er kann damit ein leeres DTO-Objekt erzeugen und anschließend die Werte aus dem JSON über Setter eintragen.
     public EnergyMessageDto() {
     }
 

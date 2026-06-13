@@ -2,6 +2,8 @@ package com.example.energy_api.dto;
 
 public class HistoricalEnergyDto {
 
+    //DTO für /energy/historical: Eine Liste dieser Objekte wird an die GUI gesendet.
+    //Die Entity bleibt intern; nach außen geht nur diese vereinfachte JSON-Struktur.
     private final String hour;
     private final double communityProduced;
     private final double communityUsed;
@@ -14,6 +16,7 @@ public class HistoricalEnergyDto {
         this.gridUsed = gridUsed;
     }
 
+    //getter methoden um die werte zurückzugeben.(als json)
     public String getHour() {
         return hour;
     }

@@ -1,3 +1,4 @@
+#Hier wird PostgreSQL als Docker-Container gestartet.
 services:
   database:
     image: postgres:alpine

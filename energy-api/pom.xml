@@ -35,17 +35,20 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
+		<!--Diese Dependency aktiviert Spring Data JPA für Datenbankzugriff. -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
+		<!--Der PostgreSQL-Treiber ermöglicht Java/Spring die Verbindung zur PostgreSQL-Datenbank. -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Flyway führt SQL-Migrationsdateien aus und erstellt damit die Tabellen. -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>

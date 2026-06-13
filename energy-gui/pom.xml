@@ -15,6 +15,7 @@
     </properties>
 
     <dependencies>
+        <!-- Diese Dependencies werden für JavaFX Controls, FXML und JSON-Verarbeitung gebraucht. -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>

@@ -4,9 +4,13 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
+//Diese Entity bildet die Tabelle energy_usage für den Usage Service ab.
+//@Entity(name = "energy_usage") verbindet die Java-Klasse mit der Tabelle energy_usage.
 @Entity(name = "energy_usage")
 public class UsageEntity {
+    //@Id markiert hour als Primary Key.
     @Id
+    //@Column(...) verbindet das Java-Feld mit einer DB-Spalte.
     @Column(name = "hour")
     private LocalDateTime hour;
 

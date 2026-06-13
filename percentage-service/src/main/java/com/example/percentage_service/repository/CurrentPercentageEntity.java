@@ -3,7 +3,7 @@ package com.example.percentage_service.repository;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-
+//Diese Entity bildet die Tabelle current_percentage für den Percentage Service ab.
 @Entity(name = "current_percentage")
 public class CurrentPercentageEntity {
     @Id
