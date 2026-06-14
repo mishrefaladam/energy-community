@@ -6,8 +6,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Spinner?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
@@ -41,7 +39,7 @@
         <HBox spacing="10.0">
             <!-- Hier kann der Benutzer das Startdatum und die Startstunde auswählen. -->
             <children>
-                <Label text="Start" />
+                <Label text="Start" minWidth="40" />
                 <DatePicker fx:id="dp_start" />
                 <Spinner fx:id="sp_startHour" prefWidth="70.0" />
                 <Label text=":00" />
@@ -49,7 +47,7 @@
         </HBox>
         <HBox spacing="10.0">
             <children>
-                <Label text="End" />
+                <Label text="End" minWidth="40" />
                 <DatePicker fx:id="dp_end" />
                 <Spinner fx:id="sp_endHour" prefWidth="70.0" />
                 <Label text=":00" />
@@ -76,15 +74,6 @@
                 <Label fx:id="lb_gridUsed" text="-" />
             </children>
         </HBox>
-        <!-- Die Tabelle zeigt historische Energiedaten an. -->
-        <TableView fx:id="tbl_history" prefHeight="200.0">
-            <columns>
-                <TableColumn fx:id="col_hour" prefWidth="160.0" text="Hour" />
-                <TableColumn fx:id="col_produced" prefWidth="120.0" text="Produced (kWh)" />
-                <TableColumn fx:id="col_used" prefWidth="120.0" text="Used (kWh)" />
-                <TableColumn fx:id="col_gridUsed" prefWidth="120.0" text="Grid (kWh)" />
-            </columns>
-        </TableView>
 
         <Label fx:id="lb_status" text="" />
     </children>

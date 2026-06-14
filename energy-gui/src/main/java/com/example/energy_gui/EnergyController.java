@@ -7,19 +7,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -79,21 +72,6 @@ public class EnergyController {
     @FXML
     private Label lb_status;
 
-    @FXML
-    private TableView<HistoricalEnergyDto> tbl_history;
-
-    @FXML
-    private TableColumn<HistoricalEnergyDto, String> col_hour;
-
-    @FXML
-    private TableColumn<HistoricalEnergyDto, Number> col_produced;
-
-    @FXML
-    private TableColumn<HistoricalEnergyDto, Number> col_used;
-
-    @FXML
-    private TableColumn<HistoricalEnergyDto, Number> col_gridUsed;
-
     //Die GUI nutzt HttpClient, um HTTP-Anfragen an die REST API zu schicken.
     //ObjectMapper wandelt JSON-Antworten in DTOs um.
     //JavaTimeModule ist wichtig, weil die DTOs LocalDateTime verwenden.
@@ -107,7 +85,7 @@ public class EnergyController {
         return String.format(Locale.US, "%.3f", value);
     }
 
-    //initialize() wird automatisch aufgerufen, nachdem die FXML geladen wurde. Hier werden Default-Werte und Tabellen-Spalten eingerichtet.
+    //initialize() wird automatisch aufgerufen, nachdem die FXML geladen wurde. Hier werden die Default-Werte eingerichtet.
     @FXML
     public void initialize() {
         sp_startHour.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, 0));
@@ -116,38 +94,6 @@ public class EnergyController {
         LocalDate today = LocalDate.now();
         dp_start.setValue(today.minusDays(1));
         dp_end.setValue(today);
-
-        col_hour.setCellValueFactory(data ->
-                new SimpleStringProperty(
-                        data.getValue().getHour() != null
-                                ? data.getValue().getHour().toString()
-                                : ""
-                )
-        );
-        col_produced.setCellValueFactory(data ->
-                new SimpleDoubleProperty(data.getValue().getCommunityProduced())
-        );
-        col_used.setCellValueFactory(data ->
-                new SimpleDoubleProperty(data.getValue().getCommunityUsed())
-        );
-        col_gridUsed.setCellValueFactory(data ->
-                new SimpleDoubleProperty(data.getValue().getGridUsed())
-        );
-
-        col_produced.setCellFactory(column -> createKwhCell());
-        col_used.setCellFactory(column -> createKwhCell());
-        col_gridUsed.setCellFactory(column -> createKwhCell());
-    }
-
-    //Diese CellFactory sorgt dafür, dass alle Zahlen in der Tabelle gleich formatiert werden.
-    private TableCell<HistoricalEnergyDto, Number> createKwhCell() {
-        return new TableCell<>() {
-            @Override
-            protected void updateItem(Number value, boolean empty) {
-                super.updateItem(value, empty);
-                setText(empty || value == null ? "" : formatKwh(value.doubleValue()));
-            }
-        };
     }
 
     //Wenn der Benutzer auf refresh klickt, wird onRefreshClicked() ausgeführt. (siehe energy-view.fxml)
@@ -174,13 +120,13 @@ public class EnergyController {
             CurrentEnergyDto current = mapper.readValue(response.body(), CurrentEnergyDto.class);
             lb_communityPool.setText(String.format("%.2f%% used", current.getCommunityDepleted()));
             lb_gridPortion.setText(String.format("%.2f%%", current.getGridPortion()));
-            lb_status.setText("Current data refreshed for hour " + current.getHour());
         } catch (Exception exception) {
             System.err.println("Something went wrong during get"
                     + exception.getMessage());
             lb_status.setText("Error: " + exception.getMessage());
         }
     }
+
     //Hier ruft die GUI den historischen REST-Endpunkt mit Query-Parametern auf.
     //Wenn der Benutzer auf show data klickt, wird onShowDataClicked() ausgeführt. (siehe energy-view.fxml)
     @FXML
@@ -214,8 +160,7 @@ public class EnergyController {
                     new TypeReference<List<HistoricalEnergyDto>>() {}
             );
 
-            //Die GUI summiert die historischen Daten und zeigt Gesamtwerte an.
-            //Die einzelnen Stunden bleiben trotzdem in der Tabelle sichtbar.
+            //Die GUI summiert die historischen Daten und zeigt die Gesamtwerte in den Labels an.
             double producedSum = 0.0;
             double usedSum = 0.0;
             double gridSum = 0.0;
@@ -228,12 +173,6 @@ public class EnergyController {
             lb_communityProduced.setText(formatKwh(producedSum) + " kWh");
             lb_communityUsed.setText(formatKwh(usedSum) + " kWh");
             lb_gridUsed.setText(formatKwh(gridSum) + " kWh");
-
-            //Die DTO-Liste wird in eine JavaFX-ObservableList umgewandelt und in die Tabelle gesetzt.
-            ObservableList<HistoricalEnergyDto> rows = FXCollections.observableArrayList(data);
-            tbl_history.setItems(rows);
-
-            lb_status.setText("Loaded " + data.size() + " hourly entries.");
         } catch (Exception exception) {
             System.err.println("Something went wrong during get"
                     + exception.getMessage());

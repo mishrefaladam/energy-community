@@ -17,7 +17,7 @@ public class EnergyApplication extends Application {
                         EnergyApplication.class.
                                 getResource("energy-view.fxml")
         );
-        Scene scene = new Scene(fxmlLoader.load(), 560, 620);
+        Scene scene = new Scene(fxmlLoader.load(), 560, 430);
         //Hier wird der Fenstertitel gesetzt, die Scene ins Fenster gelegt und das Fenster angezeigt.
         stage.setTitle("Energy Community");
         stage.setScene(scene);
