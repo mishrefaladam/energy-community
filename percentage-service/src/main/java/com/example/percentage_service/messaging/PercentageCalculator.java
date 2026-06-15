@@ -51,8 +51,6 @@ public class PercentageCalculator {
             gridPortion = usage.getGridUsed() / totalUsed * 100.0;
         }
 
-        //current_percentage hält nur den aktuellen Wert.
-        //Deshalb wird die Tabelle zuerst geleert und danach mit dem neuen Wert befüllt.
         //currentPercentageRepository.deleteAll(); -> auf Grund des Forum Eintrages deaktiviert/auskommentiert.
 
         CurrentPercentageEntity entity = new CurrentPercentageEntity();
