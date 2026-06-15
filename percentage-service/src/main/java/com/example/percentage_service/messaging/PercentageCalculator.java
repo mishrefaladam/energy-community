@@ -53,7 +53,7 @@ public class PercentageCalculator {
 
         //current_percentage hält nur den aktuellen Wert.
         //Deshalb wird die Tabelle zuerst geleert und danach mit dem neuen Wert befüllt.
-        currentPercentageRepository.deleteAll();
+        //currentPercentageRepository.deleteAll(); -> auf Grund des Forum Eintrages deaktiviert/auskommentiert.
 
         CurrentPercentageEntity entity = new CurrentPercentageEntity();
         entity.setHour(hour);
