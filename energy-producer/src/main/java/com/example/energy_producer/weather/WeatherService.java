@@ -11,8 +11,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 /**
- * Calls the open-meteo weather API and returns the current cloud cover
- * for the configured location. Lower cloud cover means more sun.
+ * Calls the open-meteo weather API and returns a sun factor for the
+ * configured location. Lower cloud cover means more sun. At night
+ * (is_day = 0) the sun factor is 0.0.
  */
 @Service
 public class WeatherService {
@@ -31,7 +32,8 @@ public class WeatherService {
     }
 
     /**
-     * Returns a sun factor between 0.0 (full cloud cover) and 1.0 (no clouds).
+     * Returns a sun factor between 0.0 (full cloud cover or night) and
+     * 1.0 (no clouds during the day).
      * If the weather api cannot be reached, returns a neutral value of 0.5.
      */
     public double getSunFactor() {
@@ -39,7 +41,7 @@ public class WeatherService {
             String url = "https://api.open-meteo.com/v1/forecast"
                     + "?latitude=" + latitude
                     + "&longitude=" + longitude
-                    + "&current=cloud_cover";
+                    + "&current=cloud_cover,is_day";
             HttpRequest getRequest = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .GET().build();
@@ -47,10 +49,15 @@ public class WeatherService {
             HttpResponse<String> response = httpClient.send(getRequest,
                     HttpResponse.BodyHandlers.ofString());
 
-
             JsonNode root = mapper.readTree(response.body());
-            JsonNode cloudCoverNode = root.path("current").path("cloud_cover");
 
+            // at night (is_day = 0) there is no sun, regardless of cloud cover
+            JsonNode isDayNode = root.path("current").path("is_day");
+            if (isDayNode.isNumber() && isDayNode.asInt() == 0) {
+                return 0.0;
+            }
+
+            JsonNode cloudCoverNode = root.path("current").path("cloud_cover");
             if (cloudCoverNode.isNumber()) {
                 double cloudCover = cloudCoverNode.asDouble();
                 double clamped = Math.max(0.0, Math.min(100.0, cloudCover));
